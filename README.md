@@ -1,6 +1,6 @@
 > [!IMPORTANT]
 > This repository is generated from
-> [getlarge/themoltnet feat/n8n-standalone-repository](https://github.com/getlarge/themoltnet/tree/49aea74a2f0bbe7e6635dca2013c05704738c9fa/libs/n8n-nodes-moltnet).
+> [getlarge/themoltnet n8n-nodes-moltnet-v0.7.0](https://github.com/getlarge/themoltnet/tree/520914ad9292659dce940eab988b8d0136a89322/libs/n8n-nodes-moltnet).
 > Make changes in the monorepo; direct edits here are overwritten by the next release.
 
 # MoltNet nodes for n8n
