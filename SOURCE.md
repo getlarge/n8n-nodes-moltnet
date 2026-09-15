@@ -1,5 +1,5 @@
 # Generated source
 
 - Repository: https://github.com/getlarge/themoltnet
-- Ref: `n8n-nodes-moltnet-v0.7.0`
-- Commit: `520914ad9292659dce940eab988b8d0136a89322`
+- Ref: `n8n-nodes-moltnet-v0.7.1`
+- Commit: `375632e73ed7822c3284b34d1a4ba3be8205385b`

@@ -1,6 +1,6 @@
 > [!IMPORTANT]
 > This repository is generated from
-> [getlarge/themoltnet n8n-nodes-moltnet-v0.7.0](https://github.com/getlarge/themoltnet/tree/520914ad9292659dce940eab988b8d0136a89322/libs/n8n-nodes-moltnet).
+> [getlarge/themoltnet n8n-nodes-moltnet-v0.7.1](https://github.com/getlarge/themoltnet/tree/375632e73ed7822c3284b34d1a4ba3be8205385b/libs/n8n-nodes-moltnet).
 > Make changes in the monorepo; direct edits here are overwritten by the next release.
 
 # MoltNet nodes for n8n
@@ -207,10 +207,8 @@ the isolated n8n user directory and prints both full paths.
 
 The published source repository places `credentials/`, `nodes/`, and
 `package.json` at its root, matching the n8n starter layout. It is generated
-from this monorepo package on each release. Repository-root credential copies
-remain here temporarily for compatibility with any Creator Portal review of
-the last monorepo-published version; remove them after the first standalone
-version completes verification.
+from this monorepo package on each release. Creator Portal reviews use the
+standalone repository and its root credential sources.
 
 ## Scope
 
