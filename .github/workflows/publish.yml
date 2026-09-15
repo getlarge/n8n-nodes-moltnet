@@ -74,10 +74,9 @@ jobs:
         run: |
           set -euo pipefail
           TAG="v${PACKAGE_VERSION}"
-          EXISTING_SHA=$(gh api \
+          if EXISTING_SHA=$(gh api \
             "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" \
-            --jq '.object.sha' 2>/dev/null || true)
-          if [ -n "$EXISTING_SHA" ]; then
+            --jq '.object.sha' 2>/dev/null); then
             test "$EXISTING_SHA" = "$GITHUB_SHA"
           else
             gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" \
