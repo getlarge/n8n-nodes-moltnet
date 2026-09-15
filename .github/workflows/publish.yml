@@ -2,47 +2,88 @@ name: Publish
 
 on:
   push:
-    tags:
-      - 'v*.*.*'
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
 jobs:
   publish:
-    name: Publish to npm
+    name: Publish exact npm version
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
+    environment: npm
     permissions:
-      contents: read
+      contents: write
       id-token: write
     outputs:
       version: ${{ steps.package-version.outputs.version }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24
           package-manager-cache: false
           registry-url: https://registry.npmjs.org
 
-      - name: Verify immutable release tag
+      - name: Inspect exact npm version
         id: package-version
         run: |
           set -euo pipefail
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
           VERSION=$(node -p "require('./package.json').version")
-          test "$GITHUB_REF" = "refs/tags/v${VERSION}"
+          view_status=0
+          view_output=$(npm view "${PACKAGE_NAME}@${VERSION}" version --json 2>&1) || view_status=$?
+          if [ "$view_status" -eq 0 ]; then
+            PUBLISHED=true
+          elif printf '%s\n' "$view_output" | grep -Eq 'E404|404 Not Found'; then
+            PUBLISHED=false
+          else
+            printf '%s\n' "$view_output" >&2
+            exit "$view_status"
+          fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "published=${PUBLISHED}" >> "$GITHUB_OUTPUT"
 
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm test
-      - run: npm run build
-      - run: npm run check:pack
+      - if: steps.package-version.outputs.published != 'true'
+        run: npm ci
+
+      - if: steps.package-version.outputs.published != 'true'
+        run: npm run build
+
+      - if: steps.package-version.outputs.published != 'true'
+        run: npm run check:pack
+
       - name: Publish or reconcile exact npm version
+        if: steps.package-version.outputs.published != 'true'
         run: node scripts/publish-exact.mjs
+
+      - name: Record published version tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_VERSION: ${{ steps.package-version.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${PACKAGE_VERSION}"
+          EXISTING_SHA=$(gh api \
+            "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" \
+            --jq '.object.sha' 2>/dev/null || true)
+          if [ -n "$EXISTING_SHA" ]; then
+            test "$EXISTING_SHA" = "$GITHUB_SHA"
+          else
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" \
+              -f ref="refs/tags/${TAG}" \
+              -f sha="$GITHUB_SHA"
+          fi
 
   scan:
     name: Scan exact published community package
@@ -52,21 +93,25 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 24
           package-manager-cache: false
 
       - name: Run n8n community package scanner
-        uses: nick-fields/retry@v4.0.0
-        with:
-          timeout_minutes: 10
-          max_attempts: 6
-          retry_wait_seconds: 30
-          # Scanner releases can print a failed report while returning status 0.
-          # Require its explicit success marker so the release fails closed.
-          command: |-
-            scan_package="@themoltnet/n8n-nodes-moltnet@${{ needs.publish.outputs.version }}"
-            scan_output="$(npx --yes @n8n/scan-community-package@beta "$scan_package" 2>&1)" || { scan_status=$?; printf '%s\n' "$scan_output"; exit "$scan_status"; }
+        env:
+          PACKAGE_VERSION: ${{ needs.publish.outputs.version }}
+        run: |
+          set -euo pipefail
+          PACKAGE="@themoltnet/n8n-nodes-moltnet@${PACKAGE_VERSION}"
+          for attempt in 1 2 3 4 5 6; do
+            scan_status=0
+            scan_output=$(npx --yes @n8n/scan-community-package@0.36.0 "$PACKAGE" 2>&1) || scan_status=$?
             printf '%s\n' "$scan_output"
-            printf '%s\n' "$scan_output" | grep -Fq "Package $scan_package has passed all security checks"
+            if [ "$scan_status" -eq 0 ] && \
+              printf '%s\n' "$scan_output" | grep -Fq "Package $PACKAGE has passed all security checks"; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 6 ]; then sleep 30; fi
+          done
+          exit 1

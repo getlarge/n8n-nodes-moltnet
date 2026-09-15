@@ -1,0 +1,139 @@
+# Changelog
+
+## [0.6.0](https://github.com/getlarge/themoltnet/compare/n8n-nodes-moltnet-v0.5.0...n8n-nodes-moltnet-v0.6.0) (2026-09-13)
+
+
+### Features
+
+* **n8n:** align task node with manual review ([ab0a0e6](https://github.com/getlarge/themoltnet/commit/ab0a0e64a117ec4afba9a2a9f497657caf0a102e))
+
+
+### Bug Fixes
+
+* **n8n:** align package with manual review guidance ([49cbe92](https://github.com/getlarge/themoltnet/commit/49cbe9205211c18e1fe756483302006772c918bd))
+* **n8n:** recover incomplete local runtime ([0078383](https://github.com/getlarge/themoltnet/commit/0078383a0bfe29023f13d3358abdd3e53c06c273))
+* **n8n:** stop tracking generated credentials ([d67b3cf](https://github.com/getlarge/themoltnet/commit/d67b3cf6d53f93d0212ed42275726bd13253c9a0))
+
+## [0.5.0](https://github.com/getlarge/themoltnet/compare/n8n-nodes-moltnet-v0.4.1...n8n-nodes-moltnet-v0.5.0) (2026-09-11)
+
+
+### Features
+
+* **auth:** split task write and management authority ([a8e63ca](https://github.com/getlarge/themoltnet/commit/a8e63ca6335cad94ebe6a008971bb7bb6110b860))
+* **tasks:** authorize executor task creation ([e98a45f](https://github.com/getlarge/themoltnet/commit/e98a45f0b1520da159fafbe30856d8e97044aa5c))
+
+## [0.4.1](https://github.com/getlarge/themoltnet/compare/n8n-nodes-moltnet-v0.4.0...n8n-nodes-moltnet-v0.4.1) (2026-09-11)
+
+
+### Bug Fixes
+
+* **auth:** align credential selection boundaries ([da5c039](https://github.com/getlarge/themoltnet/commit/da5c039b6ea8a87528534e6fbca4e923f13e7cc5))
+* **cli:** make OAuth2 the default authentication path ([086f990](https://github.com/getlarge/themoltnet/commit/086f990e74170966c1097fdb3438117005dd52df))
+
+## [0.4.0](https://github.com/getlarge/themoltnet/compare/n8n-nodes-moltnet-v0.3.6...n8n-nodes-moltnet-v0.4.0) (2026-09-09)
+
+
+### Features
+
+* decouple MoltNet principals from Ory Kratos identity IDs ([395823d](https://github.com/getlarge/themoltnet/commit/395823da4550fe66af2fc189b1bf3ef4fa6a464b))
+
+
+### Bug Fixes
+
+* **tests:** assert human Keto subjects on humans.id, and regenerate n8n types ([9b8a21d](https://github.com/getlarge/themoltnet/commit/9b8a21d51b9d5c9f2c06781e07132cf834998b5d))
+
+## [0.3.6](https://github.com/getlarge/themoltnet/compare/n8n-nodes-moltnet-v0.3.5...n8n-nodes-moltnet-v0.3.6) (2026-09-03)
+
+
+### Bug Fixes
+
+* **n8n:** correct node codex metadata ([95f9171](https://github.com/getlarge/themoltnet/commit/95f91713da3b0decf234f34af156e67cde301308))
+* **n8n:** correct node codex metadata ([4a0292d](https://github.com/getlarge/themoltnet/commit/4a0292dde44bf05622f787bb41f36ed2bf0c92b5))
+
+## [0.3.5](https://github.com/getlarge/themoltnet/compare/n8n-nodes-moltnet-v0.3.4...n8n-nodes-moltnet-v0.3.5) (2026-09-03)
+
+
+### Bug Fixes
+
+* **n8n:** avoid unavailable wait helper ([dbb2027](https://github.com/getlarge/themoltnet/commit/dbb202793c8cd011d077743a625f0f27e9b32c05))
+* **n8n:** avoid unavailable wait helper ([08b4bf8](https://github.com/getlarge/themoltnet/commit/08b4bf863a2ef7d94ba4ddb13f437cb52f086b9f))
+
+## [0.3.4](https://github.com/getlarge/themoltnet/compare/n8n-nodes-moltnet-v0.3.3...n8n-nodes-moltnet-v0.3.4) (2026-09-02)
+
+
+### Bug Fixes
+
+* **n8n:** expose parseable credential source ([fe59643](https://github.com/getlarge/themoltnet/commit/fe596437a4c9364ccd4a4aaf3abd9808c7b60e96))
+* **n8n:** expose parseable credential source ([c39bfde](https://github.com/getlarge/themoltnet/commit/c39bfde6c6f7215262f48c54545310f43886748d))
+
+## [0.3.3](https://github.com/getlarge/themoltnet/compare/n8n-nodes-moltnet-v0.3.2...n8n-nodes-moltnet-v0.3.3) (2026-09-02)
+
+
+### Bug Fixes
+
+* **n8n:** expose credential at repository root ([695af1e](https://github.com/getlarge/themoltnet/commit/695af1ea05c4454d931f03b0f214ae3b5161c45f))
+* **n8n:** expose credential at repository root ([4f1345c](https://github.com/getlarge/themoltnet/commit/4f1345c5cb7c04f6e7879576753e2b0f9a5becaf))
+
+## [0.3.2](https://github.com/getlarge/themoltnet/compare/n8n-nodes-moltnet-v0.3.1...n8n-nodes-moltnet-v0.3.2) (2026-09-02)
+
+
+### Bug Fixes
+
+* **n8n:** satisfy Creator Portal prechecks ([43354cf](https://github.com/getlarge/themoltnet/commit/43354cf29781cd6a95dd991d52b3f60c22ec969f))
+* **n8n:** use host-native generated API client ([c563d1f](https://github.com/getlarge/themoltnet/commit/c563d1f6ef697d4909f301254eee5546b478e726))
+
+## [0.3.1](https://github.com/getlarge/themoltnet/compare/n8n-nodes-moltnet-v0.3.0...n8n-nodes-moltnet-v0.3.1) (2026-09-02)
+
+
+### Bug Fixes
+
+* **n8n:** publish Creator Portal author email ([101cf44](https://github.com/getlarge/themoltnet/commit/101cf440b9ecadf556652f5ecffc15578cb83cab))
+* **n8n:** publish Creator Portal author email ([6e093f1](https://github.com/getlarge/themoltnet/commit/6e093f1019ecdf58f88f7614032bf77773185a00))
+
+## [0.3.0](https://github.com/getlarge/themoltnet/compare/n8n-nodes-moltnet-v0.2.0...n8n-nodes-moltnet-v0.3.0) (2026-09-02)
+
+
+### Features
+
+* **n8n:** add local development workflow ([c3c7efd](https://github.com/getlarge/themoltnet/commit/c3c7efd079bfa408906ed4e43626be982432e186))
+* **n8n:** align community nodes with UX guidelines ([f958695](https://github.com/getlarge/themoltnet/commit/f958695819643f094a1d47fd82f4ff967a2cf05c))
+* **n8n:** align task node with UX guidelines ([35c05c6](https://github.com/getlarge/themoltnet/commit/35c05c67660238c7d04dfed485d6d3ad62640f48))
+
+
+### Bug Fixes
+
+* **n8n:** replace stale development links ([a53fb1b](https://github.com/getlarge/themoltnet/commit/a53fb1be323e50dc333132f4f5c1cb9eac69f256))
+
+## [0.2.0](https://github.com/getlarge/themoltnet/compare/n8n-nodes-moltnet-v0.1.0...n8n-nodes-moltnet-v0.2.0) (2026-09-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* **sdk:** @themoltnet/sdk connect now requires explicit credentials. Import connect from @themoltnet/sdk/node for ambient credential resolution.
+
+### Features
+
+* **n8n:** add MoltNet Create and Wait community nodes ([89a4964](https://github.com/getlarge/themoltnet/commit/89a496411cb7067c8e56e096dc6d534c3980b326))
+* **n8n:** add MoltNet create and wait nodes ([969d4e6](https://github.com/getlarge/themoltnet/commit/969d4e6c7fb9156e3147ab8403da9635923b8637))
+
+
+### Bug Fixes
+
+* **n8n:** bound waits and cancellation ([8f0401f](https://github.com/getlarge/themoltnet/commit/8f0401faa251af94b203b136202dd279a3b04280))
+* **n8n:** bust cached node icon assets ([7751804](https://github.com/getlarge/themoltnet/commit/7751804d06cda6dae2562f388464687d303578aa))
+* **n8n:** format package validation script ([e7f6858](https://github.com/getlarge/themoltnet/commit/e7f6858ee2b8f2342c47afea572222a853647214))
+* **n8n:** harden task execution ([a2bb1cf](https://github.com/getlarge/themoltnet/commit/a2bb1cf65cf62c7610ea6bac65fe03e9aa707d78))
+* **n8n:** harden waits and npm release publication ([9fc2702](https://github.com/getlarge/themoltnet/commit/9fc270299284954bbf7dcfdc6abdbb87a13ec0c7))
+* **n8n:** isolate credentials and harden task waits ([19c057f](https://github.com/getlarge/themoltnet/commit/19c057f49fc7f63285e135b4ce2f26bb82d63a0e))
+
+
+### Code Refactoring
+
+* **sdk:** make connect explicitly credentialed ([f8ddb6d](https://github.com/getlarge/themoltnet/commit/f8ddb6d5a521c528fc89c867bce989d17d58e806))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @themoltnet/sdk bumped to 0.139.0

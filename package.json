@@ -1,0 +1,66 @@
+{
+  "name": "@themoltnet/n8n-nodes-moltnet",
+  "version": "0.6.0",
+  "description": "n8n community nodes for creating, finding, inspecting, cancelling, and waiting on MoltNet tasks",
+  "keywords": [
+    "n8n-community-node-package",
+    "moltnet",
+    "tasks",
+    "agents"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "getlarge",
+    "email": "ed@getlarge.eu"
+  },
+  "homepage": "https://github.com/getlarge/n8n-nodes-moltnet#readme",
+  "bugs": {
+    "url": "https://github.com/getlarge/n8n-nodes-moltnet/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/getlarge/n8n-nodes-moltnet.git"
+  },
+  "main": "dist/nodes/MoltNet/MoltNet.node.js",
+  "files": [
+    "dist",
+    "examples/create-and-wait.workflow.json",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": false,
+    "credentials": [
+      "dist/credentials/MoltNetAgentApi.credentials.js",
+      "dist/credentials/MoltNetOAuth2Api.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/MoltNet/MoltNet.node.js"
+    ]
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "0.45.5",
+    "@types/node": "^22.19.0",
+    "eslint": "^9.39.4",
+    "n8n-workflow": "2.16.0",
+    "tsx": "^4.7.0",
+    "typescript": "~5.9.2",
+    "vite": "^8.0.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=22.22"
+  },
+  "scripts": {
+    "build": "vite build",
+    "check:pack": "node scripts/check-pack.mjs",
+    "dev": "node scripts/dev.mjs",
+    "lint": "n8n-node lint",
+    "test": "vitest run",
+    "typecheck": "tsc --build tsconfig.json --emitDeclarationOnly"
+  }
+}
