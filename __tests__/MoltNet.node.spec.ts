@@ -1,0 +1,747 @@
+import type { ILoadOptionsFunctions } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { MoltNet } from '../nodes/MoltNet/MoltNet.node.js';
+import {
+  createExecuteContext,
+  defaultCredentials,
+  FakeMoltNetApi,
+} from './harness.js';
+
+describe('MoltNet node', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
+
+  it('uses the MoltNet task coordination color', () => {
+    expect(new MoltNet().description.iconColor).toBe('azure');
+  });
+
+  it('defines the n8n UX copy and task selection on version 1', () => {
+    const description = new MoltNet().description;
+    const operation = description.properties.find(
+      ({ name }) => name === 'operation',
+    );
+    const authentication = description.properties.find(
+      ({ name }) => name === 'authentication',
+    );
+    const taskLocator = description.properties.find(
+      ({ name, type }) => name === 'taskId' && type === 'resourceLocator',
+    );
+    const simplify = description.properties.find(
+      ({ name }) => name === 'simplify',
+    );
+
+    expect(description.version).toBe(1);
+    expect(authentication).toMatchObject({
+      default: 'agentKey',
+      options: [
+        expect.objectContaining({
+          name: 'Agent Key (Recommended)',
+          value: 'agentKey',
+        }),
+        expect.objectContaining({
+          name: 'OAuth2 Client Credentials',
+          value: 'oauth2',
+        }),
+      ],
+    });
+    expect(description.credentials).toEqual([
+      expect.objectContaining({ name: 'moltNetAgentApi' }),
+      expect.objectContaining({ name: 'moltNetOAuth2Api' }),
+    ]);
+    expect(operation?.options).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: 'Cancel task', name: 'Cancel' }),
+        expect.objectContaining({ action: 'Create task', name: 'Create' }),
+        expect.objectContaining({ action: 'Get task', name: 'Get' }),
+        expect.objectContaining({ action: 'Get many tasks', name: 'Get Many' }),
+        expect.objectContaining({
+          action: 'Get task result',
+          name: 'Get Result',
+        }),
+      ]),
+    );
+    expect(taskLocator?.modes?.[0]).toMatchObject({
+      displayName: 'From List',
+      name: 'list',
+    });
+    expect(simplify?.description).toBe(
+      'Whether to return a simplified version of the response instead of the raw data',
+    );
+  });
+
+  it('simplifies output by default and supports raw output', async () => {
+    const api = new FakeMoltNetApi();
+    vi.stubGlobal('fetch', api.fetch);
+    const parameters = {
+      operation: 'create',
+      taskType: 'freeform',
+      input: '{"brief":"Compare node versions"}',
+      options: {},
+    };
+
+    const [simplified] = await new MoltNet().execute.call(
+      createExecuteContext({ parameters }),
+    );
+    const [raw] = await new MoltNet().execute.call(
+      createExecuteContext({
+        parameters: { ...parameters, simplify: false },
+      }),
+    );
+
+    expect(raw[0].json.input).toMatchObject({
+      brief: 'Compare node versions',
+    });
+    expect(Object.keys(simplified[0].json)).toHaveLength(10);
+    expect(simplified[0].json).toMatchObject({
+      id: api.taskId,
+      status: 'queued',
+      taskType: 'freeform',
+    });
+    expect(simplified[0].json.input).toBeUndefined();
+  });
+
+  it('lets AI tools select output fields while always retaining the task ID', async () => {
+    const api = new FakeMoltNetApi();
+    vi.stubGlobal('fetch', api.fetch);
+
+    const [output] = await new MoltNet().execute.call(
+      createExecuteContext({
+        credentials: {
+          apiUrl: defaultCredentials.apiUrl,
+          clientId: 'client-id',
+          clientSecret: 'client-secret',
+          teamId: defaultCredentials.teamId,
+          diaryId: defaultCredentials.diaryId,
+        },
+        parameters: {
+          authentication: 'oauth2',
+          operation: 'create',
+          taskType: 'freeform',
+          input: '{"brief":"Select output"}',
+          options: { title: 'Selected output' },
+          output: 'selectedFields',
+          fieldsToInclude: ['status', 'title'],
+        },
+        toolExecution: true,
+      }),
+    );
+
+    expect(output[0].json).toEqual({
+      id: api.taskId,
+      status: 'queued',
+      title: 'Selected output',
+    });
+    expect(
+      api.requests.filter(({ url }) => url.endsWith('/oauth2/token')),
+    ).toHaveLength(1);
+  });
+
+  it('gets, lists, and cancels tasks with item linking', async () => {
+    const api = new FakeMoltNetApi();
+    vi.stubGlobal('fetch', api.fetch);
+
+    const [got] = await new MoltNet().execute.call(
+      createExecuteContext({
+        parameters: {
+          operation: 'get',
+          taskId: { __rl: true, mode: 'id', value: api.taskId },
+          teamId: '',
+          simplify: true,
+        },
+      }),
+    );
+    const [listed] = await new MoltNet().execute.call(
+      createExecuteContext({
+        parameters: {
+          operation: 'getMany',
+          teamId: '',
+          returnAll: false,
+          limit: 1,
+          filters: { query: 'review', statuses: ['queued'] },
+          simplify: true,
+        },
+      }),
+    );
+    const [cancelled] = await new MoltNet().execute.call(
+      createExecuteContext({
+        parameters: {
+          operation: 'cancel',
+          taskId: { __rl: true, mode: 'list', value: api.taskId },
+          teamId: '',
+          reason: 'No longer needed',
+          simplify: true,
+        },
+      }),
+    );
+
+    expect(got[0]).toMatchObject({
+      json: { id: api.taskId },
+      pairedItem: { item: 0 },
+    });
+    expect(listed[0]).toMatchObject({
+      json: { id: api.taskId },
+      pairedItem: { item: 0 },
+    });
+    expect(cancelled[0]).toMatchObject({
+      json: { id: api.taskId, status: 'cancelled' },
+      pairedItem: { item: 0 },
+    });
+    expect(api.cancellationReasons).toEqual(['No longer needed']);
+    const listRequest = api.requests.find(
+      ({ method, url }) => method === 'GET' && url.includes('/tasks?'),
+    );
+    expect(listRequest?.url).toContain('query=review');
+    expect(listRequest?.url).toContain('statuses=queued');
+  });
+
+  it('searches tasks for the Resource Locator using credential team context', async () => {
+    const api = new FakeMoltNetApi();
+    vi.stubGlobal('fetch', api.fetch);
+    const executeContext = createExecuteContext({
+      parameters: {},
+    });
+    const loadContext = {
+      getCredentials: executeContext.getCredentials,
+      getCurrentNodeParameter: () => '',
+      getNode: executeContext.getNode,
+      helpers: executeContext.helpers,
+    } as unknown as ILoadOptionsFunctions;
+
+    const result = await new MoltNet().methods.listSearch.searchTasks.call(
+      loadContext,
+      'review',
+    );
+
+    expect(result.results).toEqual([
+      {
+        name: 'freeform (queued)',
+        value: api.taskId,
+      },
+    ]);
+    const request = api.requests.find(
+      ({ method, url }) => method === 'GET' && url.includes('/tasks?'),
+    );
+    expect(request?.headers.get('x-moltnet-team-id')).toBe(
+      defaultCredentials.teamId,
+    );
+  });
+
+  it('creates a validated task with option and context precedence', async () => {
+    const api = new FakeMoltNetApi();
+    vi.stubGlobal('fetch', api.fetch);
+    const context = createExecuteContext({
+      parameters: {
+        operation: 'create',
+        taskType: 'freeform',
+        input: '{"brief":"Review this change"}',
+        options: {
+          title: 'Review',
+          tags: 'n8n, review',
+          maxAttempts: 3,
+          correlationId: '66666666-6666-4666-8666-666666666666',
+          teamId: '77777777-7777-4777-8777-777777777777',
+          diaryId: '88888888-8888-4888-8888-888888888888',
+        },
+      },
+    });
+
+    const [output] = await new MoltNet().execute.call(context);
+
+    expect(output[0].pairedItem).toEqual({ item: 0 });
+    expect(output[0].json.id).toBe(api.taskId);
+    expect(api.createdBodies[0]).toMatchObject({
+      taskType: 'freeform',
+      input: { brief: 'Review this change' },
+      title: 'Review',
+      tags: ['n8n', 'review'],
+      maxAttempts: 3,
+      correlationId: '66666666-6666-4666-8666-666666666666',
+      diaryId: '88888888-8888-4888-8888-888888888888',
+    });
+    const createRequest = api.requests.find(
+      ({ method, url }) => method === 'POST' && url.endsWith('/tasks'),
+    );
+    expect(createRequest?.headers.get('x-moltnet-team-id')).toBe(
+      '77777777-7777-4777-8777-777777777777',
+    );
+  });
+
+  it('uses credential team and diary defaults', async () => {
+    const api = new FakeMoltNetApi();
+    vi.stubGlobal('fetch', api.fetch);
+    const context = createExecuteContext({
+      parameters: {
+        operation: 'create',
+        taskType: 'freeform',
+        input: '{"brief":"Use defaults"}',
+        options: {},
+      },
+    });
+
+    await new MoltNet().execute.call(context);
+
+    expect(api.createdBodies[0].diaryId).toBe(defaultCredentials.diaryId);
+    const createRequest = api.requests.find(
+      ({ method, url }) => method === 'POST' && url.endsWith('/tasks'),
+    );
+    expect(createRequest?.headers.get('x-moltnet-team-id')).toBe(
+      defaultCredentials.teamId,
+    );
+  });
+
+  it('uses the explicitly configured Get Result team context', async () => {
+    const overrideTeamId = '77777777-7777-4777-8777-777777777777';
+    const api = new FakeMoltNetApi();
+    vi.stubGlobal('fetch', api.fetch);
+    const [created] = await new MoltNet().execute.call(
+      createExecuteContext({
+        parameters: {
+          operation: 'create',
+          taskType: 'freeform',
+          input: '{"brief":"Keep team context"}',
+          options: { teamId: overrideTeamId },
+        },
+      }),
+    );
+
+    await new MoltNet().execute.call(
+      createExecuteContext({
+        items: created,
+        parameters: {
+          operation: 'getResult',
+          taskId: api.taskId,
+          teamId: overrideTeamId,
+        },
+      }),
+    );
+
+    const resultRequest = api.requests.find(({ url }) =>
+      url.endsWith(`/tasks/${api.taskId}`),
+    );
+    expect(created[0].json.teamId).toBe(overrideTeamId);
+    expect(resultRequest?.headers.get('x-moltnet-team-id')).toBe(
+      overrideTeamId,
+    );
+  });
+
+  it('does not infer Get Result team context from untrusted input JSON', async () => {
+    const untrustedTeamId = '77777777-7777-4777-8777-777777777777';
+    const api = new FakeMoltNetApi();
+    vi.stubGlobal('fetch', api.fetch);
+
+    await new MoltNet().execute.call(
+      createExecuteContext({
+        items: [{ json: { id: api.taskId, teamId: untrustedTeamId } }],
+        parameters: {
+          operation: 'getResult',
+          taskId: api.taskId,
+        },
+      }),
+    );
+
+    const resultRequest = api.requests.find(({ url }) =>
+      url.endsWith(`/tasks/${api.taskId}`),
+    );
+    expect(resultRequest?.headers.get('x-moltnet-team-id')).toBe(
+      defaultCredentials.teamId,
+    );
+  });
+
+  it('surfaces builder validation as a node operation error', async () => {
+    const api = new FakeMoltNetApi();
+    vi.stubGlobal('fetch', api.fetch);
+    const context = createExecuteContext({
+      credentials: {
+        ...defaultCredentials,
+        teamId: '',
+        diaryId: '',
+      },
+      parameters: {
+        operation: 'create',
+        taskType: 'freeform',
+        input: '{"brief":"Missing context"}',
+        options: {},
+      },
+    });
+
+    await expect(new MoltNet().execute.call(context)).rejects.toBeInstanceOf(
+      NodeOperationError,
+    );
+    expect(api.createdBodies).toHaveLength(0);
+  });
+
+  it.each([
+    {
+      terminalStatus: 'completed',
+      acceptedAttemptN: 2,
+      attempts: [
+        {
+          taskId: '33333333-3333-4333-8333-333333333333',
+          attemptN: 2,
+          status: 'completed',
+          output: { answer: 99 },
+          error: null,
+        },
+        {
+          taskId: '33333333-3333-4333-8333-333333333333',
+          attemptN: 1,
+          status: 'failed',
+          output: null,
+          error: { code: 'EARLY_FAILURE', message: 'first attempt failed' },
+        },
+      ],
+      expected: {
+        accepted: true,
+        attemptN: 2,
+        attemptStatus: 'completed',
+        attemptCount: 2,
+        state: { answer: 99 },
+        error: null,
+      },
+    },
+    {
+      terminalStatus: 'failed',
+      acceptedAttemptN: null,
+      attempts: [
+        {
+          taskId: '33333333-3333-4333-8333-333333333333',
+          attemptN: 1,
+          status: 'failed',
+          output: null,
+          error: { code: 'MODEL_FAILED', message: 'provider unavailable' },
+        },
+        {
+          taskId: '33333333-3333-4333-8333-333333333333',
+          attemptN: 3,
+          status: 'failed',
+          output: null,
+          error: {
+            code: 'ATTEMPTS_EXHAUSTED',
+            message: 'three attempts failed',
+            retryable: false,
+          },
+        },
+      ],
+      expected: {
+        accepted: false,
+        attemptN: 3,
+        attemptStatus: 'failed',
+        attemptCount: 2,
+        state: null,
+        error: {
+          code: 'ATTEMPTS_EXHAUSTED',
+          message: 'three attempts failed',
+          retryable: false,
+        },
+      },
+    },
+    {
+      terminalStatus: 'cancelled',
+      acceptedAttemptN: null,
+      attempts: [],
+      expected: {
+        accepted: false,
+        attemptCount: 0,
+        state: null,
+        error: null,
+      },
+    },
+    {
+      terminalStatus: 'expired',
+      acceptedAttemptN: null,
+      attempts: [
+        {
+          taskId: '33333333-3333-4333-8333-333333333333',
+          attemptN: 2,
+          status: 'timed_out',
+          output: null,
+          error: { code: 'RUN_TIMEOUT', message: 'execution expired' },
+        },
+      ],
+      expected: {
+        accepted: false,
+        attemptN: 2,
+        attemptStatus: 'timed_out',
+        attemptCount: 1,
+        state: null,
+        error: { code: 'RUN_TIMEOUT', message: 'execution expired' },
+      },
+    },
+  ])(
+    'returns the latest $terminalStatus task result snapshot',
+    async ({ terminalStatus, acceptedAttemptN, attempts, expected }) => {
+      const api = new FakeMoltNetApi({
+        terminalStatus,
+        acceptedAttemptN,
+        attempts,
+      });
+      vi.stubGlobal('fetch', api.fetch);
+      const context = createExecuteContext({
+        parameters: {
+          operation: 'getResult',
+          taskId: api.taskId,
+        },
+      });
+
+      const [output] = await new MoltNet().execute.call(context);
+
+      expect(output[0].json).toMatchObject({
+        taskId: api.taskId,
+        status: terminalStatus,
+        terminal: true,
+        ...expected,
+      });
+      expect(output[0].json.attempts).toBeUndefined();
+      expect(output[0].pairedItem).toEqual({ item: 0 });
+    },
+  );
+
+  it('returns task read errors without internal polling', async () => {
+    const api = new FakeMoltNetApi({ taskReadResponses: [403] });
+    vi.stubGlobal('fetch', api.fetch);
+
+    await expect(
+      new MoltNet().execute.call(
+        createExecuteContext({
+          parameters: {
+            operation: 'getResult',
+            taskId: api.taskId,
+          },
+        }),
+      ),
+    ).rejects.toMatchObject({
+      message: 'MoltNet denied this request',
+      description:
+        "Check the agent key scopes and confirm that 'Team ID' selects a team the agent can access.",
+    });
+    expect(
+      api.requests.filter(({ url }) => url.endsWith(`/tasks/${api.taskId}`)),
+    ).toHaveLength(1);
+  });
+
+  it('aborts Get Result when n8n cancels the execution', async () => {
+    const controller = new AbortController();
+    const api = new FakeMoltNetApi({ terminalStatus: 'running' });
+    vi.stubGlobal('fetch', api.fetch);
+    controller.abort();
+
+    await expect(
+      new MoltNet().execute.call(
+        createExecuteContext({
+          cancelSignal: controller.signal,
+          parameters: {
+            operation: 'getResult',
+            taskId: api.taskId,
+          },
+        }),
+      ),
+    ).rejects.toThrow(/Execution was cancelled/);
+    expect(
+      api.requests.filter(({ url }) => url.endsWith(`/tasks/${api.taskId}`)),
+    ).toHaveLength(0);
+  });
+
+  it('treats cancellation as terminal when Continue On Fail is enabled', async () => {
+    const controller = new AbortController();
+    const api = new FakeMoltNetApi({ terminalStatus: 'running' });
+    vi.stubGlobal('fetch', api.fetch);
+    controller.abort();
+
+    await expect(
+      new MoltNet().execute.call(
+        createExecuteContext({
+          cancelSignal: controller.signal,
+          continueOnFail: true,
+          items: [{ json: {} }, { json: {} }],
+          parameters: [
+            {
+              operation: 'getResult',
+              taskId: api.taskId,
+            },
+            {
+              operation: 'create',
+              taskType: 'freeform',
+              input: '{"brief":"Must not be created"}',
+              options: {},
+            },
+          ],
+        }),
+      ),
+    ).rejects.toThrow(/Execution was cancelled/);
+    expect(api.createdBodies).toHaveLength(0);
+  });
+
+  it('retries rate-limited task creation through n8n transport', async () => {
+    vi.useFakeTimers();
+    const api = new FakeMoltNetApi({ createResponses: [429, 201] });
+    vi.stubGlobal('fetch', api.fetch);
+    const execution = new MoltNet().execute.call(
+      createExecuteContext({
+        parameters: {
+          operation: 'create',
+          taskType: 'freeform',
+          input: '{"brief":"Retry after throttling"}',
+          options: {},
+        },
+      }),
+    );
+
+    await vi.runAllTimersAsync();
+    const [output] = await execution;
+
+    expect(output[0].json.id).toBe(api.taskId);
+    expect(
+      api.requests.filter(
+        ({ method, url }) => method === 'POST' && url.endsWith('/tasks'),
+      ),
+    ).toHaveLength(2);
+    expect(
+      api.requests.filter(({ url }) => url.endsWith('/oauth2/token')),
+    ).toHaveLength(0);
+  });
+
+  it('processes every item and preserves paired item links', async () => {
+    const api = new FakeMoltNetApi();
+    vi.stubGlobal('fetch', api.fetch);
+    const context = createExecuteContext({
+      items: [{ json: { n: 1 } }, { json: { n: 2 } }],
+      parameters: [
+        {
+          operation: 'create',
+          taskType: 'freeform',
+          input: '{"brief":"First"}',
+          options: {},
+        },
+        {
+          operation: 'create',
+          taskType: 'freeform',
+          input: '{"brief":"Second"}',
+          options: {},
+        },
+      ],
+    });
+
+    const [output] = await new MoltNet().execute.call(context);
+
+    expect(output.map(({ pairedItem }) => pairedItem)).toEqual([
+      { item: 0 },
+      { item: 1 },
+    ]);
+    expect(api.createdBodies).toHaveLength(2);
+    expect(
+      api.requests.filter(({ url }) => url.endsWith('/oauth2/token')),
+    ).toHaveLength(0);
+  });
+
+  it('uses separately resolved credentials for each input item', async () => {
+    const api = new FakeMoltNetApi();
+    vi.stubGlobal('fetch', api.fetch);
+    const agentKeyCredentials = (agentApiKey: string) => ({
+      ...defaultCredentials,
+      authentication: 'agentKey' as const,
+      agentApiKey,
+      clientId: '',
+      clientSecret: '',
+    });
+    const context = createExecuteContext({
+      credentials: [
+        agentKeyCredentials('moltnet_agent_key_one'),
+        agentKeyCredentials('moltnet_agent_key_two'),
+      ],
+      items: [{ json: { n: 1 } }, { json: { n: 2 } }],
+      parameters: [
+        {
+          operation: 'create',
+          taskType: 'freeform',
+          input: '{"brief":"First identity"}',
+          options: {},
+        },
+        {
+          operation: 'create',
+          taskType: 'freeform',
+          input: '{"brief":"Second identity"}',
+          options: {},
+        },
+      ],
+    });
+
+    await new MoltNet().execute.call(context);
+
+    const authorization = api.requests
+      .filter(({ method, url }) => method === 'POST' && url.endsWith('/tasks'))
+      .map(({ headers }) => headers.get('authorization'));
+    expect(authorization).toEqual([
+      'Bearer moltnet_agent_key_one',
+      'Bearer moltnet_agent_key_two',
+    ]);
+  });
+
+  it('returns API failures when continueOnFail is enabled', async () => {
+    const api = new FakeMoltNetApi({ createStatus: 500 });
+    vi.stubGlobal('fetch', api.fetch);
+    const context = createExecuteContext({
+      continueOnFail: true,
+      parameters: {
+        operation: 'create',
+        taskType: 'freeform',
+        input: '{"brief":"Rejected"}',
+        options: {},
+      },
+    });
+
+    const [output] = await new MoltNet().execute.call(context);
+
+    expect(output[0].json).toMatchObject({
+      error: expect.any(String),
+      code: 'about:blank',
+      statusCode: 500,
+      detail: 'The fake API rejected the task',
+    });
+    expect(output[0].error).toBeDefined();
+    expect(output[0].error).toMatchObject({ httpCode: '500' });
+    expect(output[0].pairedItem).toEqual({ item: 0 });
+  });
+
+  it('preserves field-level API validation errors', async () => {
+    const api = new FakeMoltNetApi({
+      createStatus: 400,
+      createProblem: {
+        type: 'VALIDATION_FAILED',
+        title: 'Validation failed',
+        status: 400,
+        detail: 'Task input is invalid',
+        errors: [
+          { field: 'input.brief', message: 'must not be empty' },
+          { field: 'maxAttempts', message: 'must be at least 1' },
+        ],
+      },
+    });
+    vi.stubGlobal('fetch', api.fetch);
+    const [output] = await new MoltNet().execute.call(
+      createExecuteContext({
+        continueOnFail: true,
+        parameters: {
+          operation: 'create',
+          taskType: 'freeform',
+          input: '{"brief":"Rejected"}',
+          options: {},
+        },
+      }),
+    );
+
+    expect(output[0].json).toMatchObject({
+      code: 'VALIDATION_FAILED',
+      statusCode: 400,
+      detail: 'Task input is invalid',
+      validationErrors: [
+        { field: 'input.brief', message: 'must not be empty' },
+        { field: 'maxAttempts', message: 'must be at least 1' },
+      ],
+    });
+  });
+});
