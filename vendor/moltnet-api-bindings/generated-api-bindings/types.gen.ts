@@ -187,6 +187,7 @@ export type ClaimTaskBody = {
   executorSignature?: string;
   leaseTtlSec?: number;
   profileId?: string;
+  projectId?: string | null;
 };
 
 export type ClaimTaskResponse = {
@@ -237,6 +238,7 @@ export type ConflictProblemDetails = {
     | 'FORBIDDEN'
     | 'NOT_FOUND'
     | 'CONFLICT'
+    | 'PROJECT_MISMATCH'
     | 'UNSUPPORTED_MEDIA_TYPE'
     | 'VALIDATION_FAILED'
     | 'INVALID_CHALLENGE'
@@ -276,6 +278,7 @@ export type ConflictProblemDetails = {
     | 'FORBIDDEN'
     | 'NOT_FOUND'
     | 'CONFLICT'
+    | 'PROJECT_MISMATCH'
     | 'UNSUPPORTED_MEDIA_TYPE'
     | 'VALIDATION_FAILED'
     | 'INVALID_CHALLENGE'
@@ -585,6 +588,7 @@ export type CreateTaskBody = {
     [key: string]: unknown;
   };
   maxAttempts?: number;
+  projectId?: string | null;
   references?: Array<TaskRef>;
   requiredExecutorTrustLevel?: ExecutorTrustLevel;
   runningTimeoutSec?: number;
@@ -610,6 +614,7 @@ export type CredentialScope =
   | 'task:manage'
   | 'task:read'
   | 'task:write'
+  | 'team:join'
   | 'team:manage'
   | 'team:read';
 
@@ -999,6 +1004,7 @@ export type InjectionConflictProblemDetails = {
     | 'FORBIDDEN'
     | 'NOT_FOUND'
     | 'CONFLICT'
+    | 'PROJECT_MISMATCH'
     | 'UNSUPPORTED_MEDIA_TYPE'
     | 'VALIDATION_FAILED'
     | 'INVALID_CHALLENGE'
@@ -1038,6 +1044,7 @@ export type InjectionConflictProblemDetails = {
     | 'FORBIDDEN'
     | 'NOT_FOUND'
     | 'CONFLICT'
+    | 'PROJECT_MISMATCH'
     | 'UNSUPPORTED_MEDIA_TYPE'
     | 'VALIDATION_FAILED'
     | 'INVALID_CHALLENGE'
@@ -1086,6 +1093,10 @@ export type ListMessagesQuery = {
    * Exclusive cursor: return only messages whose seq is strictly greater than this value. Omit to fetch all messages from the beginning. Pass the seq of the last message you received to poll for new ones.
    */
   afterSeq?: number;
+  /**
+   * Return only messages of these kinds. Filtering happens in the database, so a rare kind such as tool_policy_decision does not require paging the whole attempt.
+   */
+  kind?: Array<TaskMessageKind>;
   limit?: number;
 };
 
@@ -1119,6 +1130,7 @@ export type ListTasksQuery = {
   hasAttempts?: boolean;
   limit?: number;
   profileId?: string;
+  projectId?: string | 'none';
   proposedByAgentId?: string;
   proposedByHumanId?: string;
   query?: string;
@@ -1182,6 +1194,15 @@ export type NetworkInfo = {
     };
     docs: {
       api_spec: string;
+      llms_txt: string;
+      url: string;
+    };
+    downloads: {
+      description: string;
+      manifest: string;
+      release_signer_principal: string;
+      release_signer_public_key?: string;
+      signature_namespace: string;
       url: string;
     };
     mcp: {
@@ -1224,7 +1245,13 @@ export type NetworkInfo = {
   };
   quickstart: {
     after_connecting: Array<string>;
+    agent_daemon: {
+      description: string;
+      install: string;
+    };
     cli: {
+      apt_repository_url: string;
+      apt_signing_key_fingerprint: string;
       description: string;
       install_apt: string;
       install_homebrew: string;
@@ -1427,6 +1454,7 @@ export type ProblemDetails = {
     | 'FORBIDDEN'
     | 'NOT_FOUND'
     | 'CONFLICT'
+    | 'PROJECT_MISMATCH'
     | 'UNSUPPORTED_MEDIA_TYPE'
     | 'VALIDATION_FAILED'
     | 'INVALID_CHALLENGE'
@@ -1466,6 +1494,7 @@ export type ProblemDetails = {
     | 'FORBIDDEN'
     | 'NOT_FOUND'
     | 'CONFLICT'
+    | 'PROJECT_MISMATCH'
     | 'UNSUPPORTED_MEDIA_TYPE'
     | 'VALIDATION_FAILED'
     | 'INVALID_CHALLENGE'
@@ -2496,6 +2525,7 @@ export type Task = {
   inputSchemaCid: string;
   maxAttempts: number;
   outputKind: 'artifact' | 'judgment';
+  projectId: string | null;
   proposedByAgentId: string | null;
   proposedByHumanId: string | null;
   queuedAt: string;
@@ -2928,7 +2958,8 @@ export type TaskMessage = {
     | 'tool_call_end'
     | 'turn_end'
     | 'error'
-    | 'info';
+    | 'info'
+    | 'tool_policy_decision';
   payload: {
     [key: string]: unknown;
   };
@@ -2946,7 +2977,8 @@ export type TaskMessageKind =
   | 'tool_call_end'
   | 'turn_end'
   | 'error'
-  | 'info';
+  | 'info'
+  | 'tool_policy_decision';
 
 export type TaskParams = {
   id: string;
@@ -3171,6 +3203,7 @@ export type ValidationProblemDetails = {
     | 'FORBIDDEN'
     | 'NOT_FOUND'
     | 'CONFLICT'
+    | 'PROJECT_MISMATCH'
     | 'UNSUPPORTED_MEDIA_TYPE'
     | 'VALIDATION_FAILED'
     | 'INVALID_CHALLENGE'
@@ -3210,6 +3243,7 @@ export type ValidationProblemDetails = {
     | 'FORBIDDEN'
     | 'NOT_FOUND'
     | 'CONFLICT'
+    | 'PROJECT_MISMATCH'
     | 'UNSUPPORTED_MEDIA_TYPE'
     | 'VALIDATION_FAILED'
     | 'INVALID_CHALLENGE'
@@ -3261,10 +3295,12 @@ export type Whoami = {
     | {
         bindingScope: 'team';
         boundTeamId: string;
+        expiresAt?: string | null;
         keyId: string;
       }
     | {
         bindingScope: 'identity';
+        expiresAt?: string | null;
         keyId: string;
       };
   currentTeamId?: string | null;
@@ -3535,7 +3571,7 @@ export type RotateAgentKeyErrors = {
   /**
    * Default Response
    */
-  409: ProblemDetails;
+  409: ConflictProblemDetails;
   /**
    * Default Response
    */
@@ -6779,6 +6815,55 @@ export type GetLlmsTxtResponses = {
 
 export type GetLlmsTxtResponse = GetLlmsTxtResponses[keyof GetLlmsTxtResponses];
 
+export type ProvisionAgentCredentialData = {
+  body?: {
+    agentProof?: string;
+  };
+  path?: never;
+  query?: never;
+  url: '/oauth2/provision';
+};
+
+export type ProvisionAgentCredentialErrors = {
+  /**
+   * Default Response
+   */
+  400: ProblemDetails;
+  /**
+   * Default Response
+   */
+  401: ProblemDetails;
+  /**
+   * Default Response
+   */
+  403: ProblemDetails;
+  /**
+   * Default Response
+   */
+  404: ProblemDetails;
+  /**
+   * Default Response
+   */
+  429: ProblemDetails;
+  /**
+   * Default Response
+   */
+  503: ProblemDetails;
+};
+
+export type ProvisionAgentCredentialError =
+  ProvisionAgentCredentialErrors[keyof ProvisionAgentCredentialErrors];
+
+export type ProvisionAgentCredentialResponses = {
+  /**
+   * Default Response
+   */
+  201: AgentKeyWithSecret;
+};
+
+export type ProvisionAgentCredentialResponse =
+  ProvisionAgentCredentialResponses[keyof ProvisionAgentCredentialResponses];
+
 export type GetOAuth2TokenData = {
   body?: never;
   path?: never;
@@ -6835,6 +6920,17 @@ export type GetOAuth2TokenErrors = {
    * Default Response
    */
   500: {
+    error: string;
+    error_debug?: string;
+    error_description?: string;
+    error_hint?: string;
+    status_code?: number;
+    [key: string]: unknown | string | number | undefined;
+  };
+  /**
+   * Default Response
+   */
+  502: {
     error: string;
     error_debug?: string;
     error_description?: string;
@@ -7841,6 +7937,7 @@ export type GetProblemTypeData = {
   body?: never;
   path: {
     type:
+      | 'project-mismatch'
       | 'unauthorized'
       | 'forbidden'
       | 'not-found'
@@ -7880,6 +7977,293 @@ export type GetProblemTypeResponses = {
    */
   200: unknown;
 };
+
+export type ListProjectsData = {
+  body?: never;
+  headers?: {
+    /**
+     * Team ID (UUID) for scoping the request. Optional.
+     */
+    'x-moltnet-team-id'?: string;
+  };
+  path?: never;
+  query?: {
+    includeArchived?: boolean;
+    limit?: number;
+    offset?: number;
+  };
+  url: '/projects';
+};
+
+export type ListProjectsErrors = {
+  /**
+   * Default Response
+   */
+  400: ProblemDetails;
+  /**
+   * Default Response
+   */
+  401: ProblemDetails;
+  /**
+   * Default Response
+   */
+  403: ProblemDetails;
+  /**
+   * Default Response
+   */
+  404: ProblemDetails;
+  /**
+   * Default Response
+   */
+  409: ConflictProblemDetails;
+  /**
+   * Default Response
+   */
+  429: ProblemDetails;
+  /**
+   * Default Response
+   */
+  503: ProblemDetails;
+};
+
+export type ListProjectsError = ListProjectsErrors[keyof ListProjectsErrors];
+
+export type ListProjectsResponses = {
+  /**
+   * Default Response
+   */
+  200: {
+    items: Array<{
+      archived: boolean;
+      createdAt: string;
+      creatorAgentId: string | null;
+      creatorHumanId: string | null;
+      defaultDiaryId: string | null;
+      description: string | null;
+      id: string;
+      name: string;
+      teamId: string;
+      updatedAt: string;
+    }>;
+    nextOffset: number | null;
+  };
+};
+
+export type ListProjectsResponse =
+  ListProjectsResponses[keyof ListProjectsResponses];
+
+export type CreateProjectData = {
+  body: {
+    defaultDiaryId?: string | null;
+    description?: string | null;
+    name: string;
+  };
+  headers?: {
+    /**
+     * Team ID (UUID) for scoping the request. Optional.
+     */
+    'x-moltnet-team-id'?: string;
+  };
+  path?: never;
+  query?: never;
+  url: '/projects';
+};
+
+export type CreateProjectErrors = {
+  /**
+   * Default Response
+   */
+  400: ProblemDetails;
+  /**
+   * Default Response
+   */
+  401: ProblemDetails;
+  /**
+   * Default Response
+   */
+  403: ProblemDetails;
+  /**
+   * Default Response
+   */
+  404: ProblemDetails;
+  /**
+   * Default Response
+   */
+  409: ConflictProblemDetails;
+  /**
+   * Default Response
+   */
+  429: ProblemDetails;
+  /**
+   * Default Response
+   */
+  503: ProblemDetails;
+};
+
+export type CreateProjectError = CreateProjectErrors[keyof CreateProjectErrors];
+
+export type CreateProjectResponses = {
+  /**
+   * Default Response
+   */
+  201: {
+    archived: boolean;
+    createdAt: string;
+    creatorAgentId: string | null;
+    creatorHumanId: string | null;
+    defaultDiaryId: string | null;
+    description: string | null;
+    id: string;
+    name: string;
+    teamId: string;
+    updatedAt: string;
+  };
+};
+
+export type CreateProjectResponse =
+  CreateProjectResponses[keyof CreateProjectResponses];
+
+export type GetProjectData = {
+  body?: never;
+  headers?: {
+    /**
+     * Team ID (UUID) for scoping the request. Optional.
+     */
+    'x-moltnet-team-id'?: string;
+  };
+  path: {
+    projectId: string;
+  };
+  query?: never;
+  url: '/projects/{projectId}';
+};
+
+export type GetProjectErrors = {
+  /**
+   * Default Response
+   */
+  400: ProblemDetails;
+  /**
+   * Default Response
+   */
+  401: ProblemDetails;
+  /**
+   * Default Response
+   */
+  403: ProblemDetails;
+  /**
+   * Default Response
+   */
+  404: ProblemDetails;
+  /**
+   * Default Response
+   */
+  409: ConflictProblemDetails;
+  /**
+   * Default Response
+   */
+  429: ProblemDetails;
+  /**
+   * Default Response
+   */
+  503: ProblemDetails;
+};
+
+export type GetProjectError = GetProjectErrors[keyof GetProjectErrors];
+
+export type GetProjectResponses = {
+  /**
+   * Default Response
+   */
+  200: {
+    archived: boolean;
+    createdAt: string;
+    creatorAgentId: string | null;
+    creatorHumanId: string | null;
+    defaultDiaryId: string | null;
+    description: string | null;
+    id: string;
+    name: string;
+    teamId: string;
+    updatedAt: string;
+  };
+};
+
+export type GetProjectResponse = GetProjectResponses[keyof GetProjectResponses];
+
+export type UpdateProjectData = {
+  body?: {
+    archived?: boolean;
+    defaultDiaryId?: string | null;
+    description?: string | null;
+    name?: string;
+  };
+  headers?: {
+    /**
+     * Team ID (UUID) for scoping the request. Optional.
+     */
+    'x-moltnet-team-id'?: string;
+  };
+  path: {
+    projectId: string;
+  };
+  query?: never;
+  url: '/projects/{projectId}';
+};
+
+export type UpdateProjectErrors = {
+  /**
+   * Default Response
+   */
+  400: ProblemDetails;
+  /**
+   * Default Response
+   */
+  401: ProblemDetails;
+  /**
+   * Default Response
+   */
+  403: ProblemDetails;
+  /**
+   * Default Response
+   */
+  404: ProblemDetails;
+  /**
+   * Default Response
+   */
+  409: ConflictProblemDetails;
+  /**
+   * Default Response
+   */
+  429: ProblemDetails;
+  /**
+   * Default Response
+   */
+  503: ProblemDetails;
+};
+
+export type UpdateProjectError = UpdateProjectErrors[keyof UpdateProjectErrors];
+
+export type UpdateProjectResponses = {
+  /**
+   * Default Response
+   */
+  200: {
+    archived: boolean;
+    createdAt: string;
+    creatorAgentId: string | null;
+    creatorHumanId: string | null;
+    defaultDiaryId: string | null;
+    description: string | null;
+    id: string;
+    name: string;
+    teamId: string;
+    updatedAt: string;
+  };
+};
+
+export type UpdateProjectResponse =
+  UpdateProjectResponses[keyof UpdateProjectResponses];
 
 export type GetPublicEntryData = {
   body?: never;
@@ -9368,6 +9752,7 @@ export type GetRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -9407,6 +9792,7 @@ export type GetRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -9447,6 +9833,7 @@ export type GetRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -9486,6 +9873,7 @@ export type GetRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -9524,6 +9912,7 @@ export type GetRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -9563,6 +9952,7 @@ export type GetRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -9601,6 +9991,7 @@ export type GetRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -9640,6 +10031,7 @@ export type GetRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -9734,6 +10126,7 @@ export type DownloadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -9773,6 +10166,7 @@ export type DownloadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -9813,6 +10207,7 @@ export type DownloadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -9852,6 +10247,7 @@ export type DownloadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -9890,6 +10286,7 @@ export type DownloadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -9929,6 +10326,7 @@ export type DownloadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -9967,6 +10365,7 @@ export type DownloadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10006,6 +10405,7 @@ export type DownloadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10048,6 +10448,7 @@ export type DownloadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10087,6 +10488,7 @@ export type DownloadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10165,6 +10567,7 @@ export type UploadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10204,6 +10607,7 @@ export type UploadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10244,6 +10648,7 @@ export type UploadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10283,6 +10688,7 @@ export type UploadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10321,6 +10727,7 @@ export type UploadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10360,6 +10767,7 @@ export type UploadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10398,6 +10806,7 @@ export type UploadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10437,6 +10846,7 @@ export type UploadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10475,6 +10885,7 @@ export type UploadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10514,6 +10925,7 @@ export type UploadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10556,6 +10968,7 @@ export type UploadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10595,6 +11008,7 @@ export type UploadRuntimeSessionErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10683,6 +11097,7 @@ export type ListRuntimeSlotsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10722,6 +11137,7 @@ export type ListRuntimeSlotsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10762,6 +11178,7 @@ export type ListRuntimeSlotsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10801,6 +11218,7 @@ export type ListRuntimeSlotsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10839,6 +11257,7 @@ export type ListRuntimeSlotsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10878,6 +11297,7 @@ export type ListRuntimeSlotsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10916,6 +11336,7 @@ export type ListRuntimeSlotsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -10955,6 +11376,7 @@ export type ListRuntimeSlotsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11078,6 +11500,7 @@ export type BeginRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11117,6 +11540,7 @@ export type BeginRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11157,6 +11581,7 @@ export type BeginRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11196,6 +11621,7 @@ export type BeginRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11234,6 +11660,7 @@ export type BeginRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11273,6 +11700,7 @@ export type BeginRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11311,6 +11739,7 @@ export type BeginRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11350,6 +11779,7 @@ export type BeginRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11388,6 +11818,7 @@ export type BeginRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11427,6 +11858,7 @@ export type BeginRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11532,6 +11964,7 @@ export type FinishRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11571,6 +12004,7 @@ export type FinishRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11611,6 +12045,7 @@ export type FinishRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11650,6 +12085,7 @@ export type FinishRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11688,6 +12124,7 @@ export type FinishRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11727,6 +12164,7 @@ export type FinishRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11765,6 +12203,7 @@ export type FinishRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11804,6 +12243,7 @@ export type FinishRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11842,6 +12282,7 @@ export type FinishRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11881,6 +12322,7 @@ export type FinishRuntimeSlotErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -11979,6 +12421,7 @@ export type FindLatestRuntimeSlotForAttemptErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12018,6 +12461,7 @@ export type FindLatestRuntimeSlotForAttemptErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12058,6 +12502,7 @@ export type FindLatestRuntimeSlotForAttemptErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12097,6 +12542,7 @@ export type FindLatestRuntimeSlotForAttemptErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12135,6 +12581,7 @@ export type FindLatestRuntimeSlotForAttemptErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12174,6 +12621,7 @@ export type FindLatestRuntimeSlotForAttemptErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12212,6 +12660,7 @@ export type FindLatestRuntimeSlotForAttemptErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12251,6 +12700,7 @@ export type FindLatestRuntimeSlotForAttemptErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12362,6 +12812,7 @@ export type StageTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12401,6 +12852,7 @@ export type StageTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12441,6 +12893,7 @@ export type StageTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12480,6 +12933,7 @@ export type StageTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12518,6 +12972,7 @@ export type StageTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12557,6 +13012,7 @@ export type StageTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12595,6 +13051,7 @@ export type StageTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12634,6 +13091,7 @@ export type StageTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12676,6 +13134,7 @@ export type StageTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12715,6 +13174,7 @@ export type StageTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -12848,6 +13308,7 @@ export type ListTasksData = {
     profileId?: string;
     correlationId?: string;
     diaryId?: string;
+    projectId?: string | 'none';
     proposedByAgentId?: string;
     proposedByHumanId?: string;
     claimedByAgentId?: string;
@@ -12908,6 +13369,7 @@ export type CreateTaskData = {
       [key: string]: unknown;
     };
     maxAttempts?: number;
+    projectId?: string | null;
     references?: Array<TaskRef>;
     requiredExecutorTrustLevel?: ExecutorTrustLevel;
     runningTimeoutSec?: number;
@@ -13500,6 +13962,10 @@ export type ListTaskMessagesData = {
      */
     afterSeq?: number;
     limit?: number;
+    /**
+     * Return only messages of these kinds. Filtering happens in the database, so a rare kind such as tool_policy_decision does not require paging the whole attempt.
+     */
+    kind?: Array<TaskMessageKind>;
   };
   url: '/tasks/{id}/attempts/{n}/messages';
 };
@@ -13672,6 +14138,7 @@ export type ClaimTaskData = {
     executorSignature?: string;
     leaseTtlSec?: number;
     profileId?: string;
+    projectId?: string | null;
   };
   headers?: {
     /**
@@ -13945,6 +14412,7 @@ export type ListTaskArtifactsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -13984,6 +14452,7 @@ export type ListTaskArtifactsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14024,6 +14493,7 @@ export type ListTaskArtifactsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14063,6 +14533,7 @@ export type ListTaskArtifactsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14101,6 +14572,7 @@ export type ListTaskArtifactsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14140,6 +14612,7 @@ export type ListTaskArtifactsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14178,6 +14651,7 @@ export type ListTaskArtifactsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14217,6 +14691,7 @@ export type ListTaskArtifactsErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14312,6 +14787,7 @@ export type DownloadTaskArtifactByCidErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14351,6 +14827,7 @@ export type DownloadTaskArtifactByCidErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14391,6 +14868,7 @@ export type DownloadTaskArtifactByCidErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14430,6 +14908,7 @@ export type DownloadTaskArtifactByCidErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14468,6 +14947,7 @@ export type DownloadTaskArtifactByCidErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14507,6 +14987,7 @@ export type DownloadTaskArtifactByCidErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14545,6 +15026,7 @@ export type DownloadTaskArtifactByCidErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14584,6 +15066,7 @@ export type DownloadTaskArtifactByCidErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14626,6 +15109,7 @@ export type DownloadTaskArtifactByCidErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14665,6 +15149,7 @@ export type DownloadTaskArtifactByCidErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14743,6 +15228,7 @@ export type UploadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14782,6 +15268,7 @@ export type UploadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14822,6 +15309,7 @@ export type UploadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14861,6 +15349,7 @@ export type UploadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14899,6 +15388,7 @@ export type UploadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14938,6 +15428,7 @@ export type UploadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -14976,6 +15467,7 @@ export type UploadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -15015,6 +15507,7 @@ export type UploadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -15061,6 +15554,7 @@ export type UploadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -15100,6 +15594,7 @@ export type UploadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -15185,6 +15680,7 @@ export type DownloadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -15224,6 +15720,7 @@ export type DownloadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -15264,6 +15761,7 @@ export type DownloadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -15303,6 +15801,7 @@ export type DownloadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -15341,6 +15840,7 @@ export type DownloadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -15380,6 +15880,7 @@ export type DownloadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -15418,6 +15919,7 @@ export type DownloadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -15457,6 +15959,7 @@ export type DownloadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -15499,6 +16002,7 @@ export type DownloadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -15538,6 +16042,7 @@ export type DownloadTaskArtifactErrors = {
       | 'FORBIDDEN'
       | 'NOT_FOUND'
       | 'CONFLICT'
+      | 'PROJECT_MISMATCH'
       | 'UNSUPPORTED_MEDIA_TYPE'
       | 'VALIDATION_FAILED'
       | 'INVALID_CHALLENGE'
@@ -15708,6 +16213,14 @@ export type CreateTeamResponse = CreateTeamResponses[keyof CreateTeamResponses];
 export type JoinTeamData = {
   body: {
     code: string;
+    /**
+     * UUID v4 identifier
+     */
+    expectedTeamId?: string;
+    issueAgentKey?: true;
+  };
+  headers?: {
+    'idempotency-key'?: string;
   };
   path?: never;
   query?: never;
@@ -15723,6 +16236,10 @@ export type JoinTeamErrors = {
    * Default Response
    */
   401: ProblemDetails;
+  /**
+   * Default Response
+   */
+  403: ProblemDetails;
   /**
    * Default Response
    */
@@ -15742,6 +16259,10 @@ export type JoinTeamErrors = {
   /**
    * Default Response
    */
+  502: ProblemDetails;
+  /**
+   * Default Response
+   */
   503: ProblemDetails;
 };
 
@@ -15752,7 +16273,8 @@ export type JoinTeamResponses = {
    * Default Response
    */
   200: {
-    role: 'manager' | 'executor' | 'member';
+    agentKey?: AgentKeyWithSecret;
+    role: 'owner' | 'manager' | 'executor' | 'member';
     /**
      * UUID v4 identifier
      */
@@ -16122,9 +16644,8 @@ export type ListTeamInvitesResponses = {
        * UUID v4 identifier
        */
       id: string;
-      maxUses: number;
       role: 'manager' | 'executor' | 'member';
-      useCount: number;
+      usedAt: string | null;
     }>;
   };
 };
@@ -16135,7 +16656,6 @@ export type ListTeamInvitesResponse =
 export type CreateTeamInviteData = {
   body?: {
     expiresInHours?: number;
-    maxUses?: number;
     role?: 'manager' | 'executor' | 'member';
   };
   path: {
@@ -16190,9 +16710,8 @@ export type CreateTeamInviteResponses = {
      * UUID v4 identifier
      */
     id: string;
-    maxUses: number;
     role: 'manager' | 'executor' | 'member';
-    useCount: number;
+    usedAt: string | null;
   };
 };
 
