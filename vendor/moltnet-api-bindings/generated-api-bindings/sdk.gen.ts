@@ -72,6 +72,9 @@ import type {
   CreateGroupData,
   CreateGroupErrors,
   CreateGroupResponses,
+  CreateProjectData,
+  CreateProjectErrors,
+  CreateProjectResponses,
   CreateRuntimeModelData,
   CreateRuntimeModelErrors,
   CreateRuntimeModelResponses,
@@ -194,6 +197,9 @@ import type {
   GetOAuth2TokenResponses,
   GetProblemTypeData,
   GetProblemTypeResponses,
+  GetProjectData,
+  GetProjectErrors,
+  GetProjectResponses,
   GetPublicEntryData,
   GetPublicEntryErrors,
   GetPublicEntryResponses,
@@ -286,6 +292,9 @@ import type {
   ListPendingTransfersResponses,
   ListProblemTypesData,
   ListProblemTypesResponses,
+  ListProjectsData,
+  ListProjectsErrors,
+  ListProjectsResponses,
   ListRuntimeModelsData,
   ListRuntimeModelsErrors,
   ListRuntimeModelsResponses,
@@ -337,6 +346,9 @@ import type {
   PreviewRenderedPackData,
   PreviewRenderedPackErrors,
   PreviewRenderedPackResponses,
+  ProvisionAgentCredentialData,
+  ProvisionAgentCredentialErrors,
+  ProvisionAgentCredentialResponses,
   RecoverAgentCredentialsData,
   RecoverAgentCredentialsErrors,
   RecoverAgentCredentialsResponses,
@@ -418,6 +430,9 @@ import type {
   UpdateEntryRelationStatusData,
   UpdateEntryRelationStatusErrors,
   UpdateEntryRelationStatusResponses,
+  UpdateProjectData,
+  UpdateProjectErrors,
+  UpdateProjectResponses,
   UpdateRenderedPackData,
   UpdateRenderedPackErrors,
   UpdateRenderedPackResponses,
@@ -504,6 +519,7 @@ export const listAgentKeys = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -527,6 +543,7 @@ export const createAgentKey = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -556,6 +573,7 @@ export const revokeAgentKey = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -584,6 +602,7 @@ export const rotateAgentKey = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -607,6 +626,7 @@ export const getWhoami = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -737,6 +757,7 @@ export const rotateClientSecret = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -760,6 +781,7 @@ export const getCryptoIdentity = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -802,6 +824,7 @@ export const listSigningCredentials = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -876,6 +899,7 @@ export const getSigningCredential = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -896,6 +920,7 @@ export const approveSigningCredential = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -922,6 +947,7 @@ export const revokeSigningCredential = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -946,6 +972,7 @@ export const suspendSigningCredential = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -975,6 +1002,7 @@ export const listSigningRequests = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -998,6 +1026,7 @@ export const createSigningRequest = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -1026,6 +1055,7 @@ export const getSigningRequest = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -1123,6 +1153,7 @@ export const submitSignature = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1170,6 +1201,7 @@ export const listDiaries = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1193,6 +1225,7 @@ export const createDiary = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -1222,6 +1255,7 @@ export const searchDiary = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1250,6 +1284,7 @@ export const listDiaryEntries = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1273,6 +1308,7 @@ export const createDiaryEntry = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -1302,6 +1338,7 @@ export const listDiaryTags = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1325,6 +1362,7 @@ export const deleteDiary = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -1350,6 +1388,7 @@ export const getDiary = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1373,6 +1412,7 @@ export const updateDiary = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -1402,6 +1442,7 @@ export const revokeDiaryGrant = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1430,6 +1471,7 @@ export const listDiaryGrants = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1453,6 +1495,7 @@ export const createDiaryGrant = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -1482,6 +1525,7 @@ export const listDiaryPacks = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1505,6 +1549,7 @@ export const createDiaryCustomPack = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -1534,6 +1579,7 @@ export const previewDiaryCustomPack = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1562,6 +1608,7 @@ export const listDiaryRenderedPacks = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1585,6 +1632,7 @@ export const initiateTransfer = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -1614,6 +1662,7 @@ export const batchDeleteDiaryEntries = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1642,6 +1691,7 @@ export const deleteDiaryEntryById = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1666,6 +1716,7 @@ export const getDiaryEntryById = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1689,6 +1740,7 @@ export const updateDiaryEntryById = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -1718,6 +1770,7 @@ export const listEntryRelations = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1741,6 +1794,7 @@ export const createEntryRelation = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -1770,6 +1824,7 @@ export const verifyDiaryEntryById = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1792,7 +1847,10 @@ export const registerExecutorManifest = <ThrowOnError extends boolean = false>(
     RegisterExecutorManifestErrors,
     ThrowOnError
   >({
-    security: [{ scheme: 'bearer', type: 'http' }],
+    security: [
+      { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
+    ],
     url: '/executor-manifests/register',
     ...options,
     headers: {
@@ -1813,6 +1871,7 @@ export const deleteGroup = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -1838,6 +1897,7 @@ export const getGroup = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1862,6 +1922,7 @@ export const listGroupMembers = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -1885,6 +1946,7 @@ export const addGroupMember = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -1913,6 +1975,7 @@ export const removeGroupMember = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -1959,6 +2022,23 @@ export const getLlmsTxt = <ThrowOnError extends boolean = false>(
     ...options,
   });
 
+export const provisionAgentCredential = <ThrowOnError extends boolean = false>(
+  options?: Options<ProvisionAgentCredentialData, ThrowOnError>,
+) =>
+  (options?.client ?? client).post<
+    ProvisionAgentCredentialResponses,
+    ProvisionAgentCredentialErrors,
+    ThrowOnError
+  >({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/oauth2/provision',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers,
+    },
+  });
+
 /**
  * OAuth2 token endpoint. Proxies every grant to the upstream identity provider, which remains the authority on which grants and client authentication methods are accepted. Successful client_credentials and refresh_token grants may be served from cache.
  */
@@ -1984,6 +2064,7 @@ export const listContextPacks = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2007,6 +2088,7 @@ export const diffContextPacksByCid = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -2034,6 +2116,7 @@ export const getContextPackProvenanceByCid = <
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2058,6 +2141,7 @@ export const getContextPackById = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2081,6 +2165,7 @@ export const updateContextPack = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -2110,6 +2195,7 @@ export const diffContextPacksById = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2136,6 +2222,7 @@ export const getContextPackProvenanceById = <
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2159,6 +2246,7 @@ export const renderContextPack = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -2188,6 +2276,7 @@ export const previewRenderedPack = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2215,6 +2304,7 @@ export const getLatestRenderedPack = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -2250,6 +2340,102 @@ export const getProblemType = <ThrowOnError extends boolean = false>(
     unknown,
     ThrowOnError
   >({ url: '/problems/{type}', ...options });
+
+export const listProjects = <ThrowOnError extends boolean = false>(
+  options?: Options<ListProjectsData, ThrowOnError>,
+) =>
+  (options?.client ?? client).get<
+    ListProjectsResponses,
+    ListProjectsErrors,
+    ThrowOnError
+  >({
+    security: [
+      { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
+      { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
+      {
+        in: 'cookie',
+        name: 'ory_kratos_session',
+        type: 'apiKey',
+      },
+    ],
+    url: '/projects',
+    ...options,
+  });
+
+export const createProject = <ThrowOnError extends boolean = false>(
+  options: Options<CreateProjectData, ThrowOnError>,
+) =>
+  (options.client ?? client).post<
+    CreateProjectResponses,
+    CreateProjectErrors,
+    ThrowOnError
+  >({
+    security: [
+      { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
+      { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
+      {
+        in: 'cookie',
+        name: 'ory_kratos_session',
+        type: 'apiKey',
+      },
+    ],
+    url: '/projects',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+export const getProject = <ThrowOnError extends boolean = false>(
+  options: Options<GetProjectData, ThrowOnError>,
+) =>
+  (options.client ?? client).get<
+    GetProjectResponses,
+    GetProjectErrors,
+    ThrowOnError
+  >({
+    security: [
+      { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
+      { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
+      {
+        in: 'cookie',
+        name: 'ory_kratos_session',
+        type: 'apiKey',
+      },
+    ],
+    url: '/projects/{projectId}',
+    ...options,
+  });
+
+export const updateProject = <ThrowOnError extends boolean = false>(
+  options: Options<UpdateProjectData, ThrowOnError>,
+) =>
+  (options.client ?? client).patch<
+    UpdateProjectResponses,
+    UpdateProjectErrors,
+    ThrowOnError
+  >({
+    security: [
+      { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
+      { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
+      {
+        in: 'cookie',
+        name: 'ory_kratos_session',
+        type: 'apiKey',
+      },
+    ],
+    url: '/projects/{projectId}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
 
 /**
  * Get a single public diary entry by ID with author info. No authentication required.
@@ -2390,6 +2576,7 @@ export const deleteEntryRelation = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2413,6 +2600,7 @@ export const updateEntryRelationStatus = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -2442,6 +2630,7 @@ export const getRenderedPackById = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2465,6 +2654,7 @@ export const updateRenderedPack = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -2494,6 +2684,7 @@ export const listRuntimeModels = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2517,6 +2708,7 @@ export const createRuntimeModel = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -2546,6 +2738,7 @@ export const deleteRuntimeModel = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2570,6 +2763,7 @@ export const getRuntimeModel = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2593,6 +2787,7 @@ export const updateRuntimeModel = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -2622,6 +2817,7 @@ export const listRuntimePolicies = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2645,6 +2841,7 @@ export const createRuntimePolicy = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -2674,6 +2871,7 @@ export const deleteRuntimePolicy = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2698,6 +2896,7 @@ export const getRuntimePolicy = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2721,6 +2920,7 @@ export const updateRuntimePolicy = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -2750,6 +2950,7 @@ export const listRuntimeProfiles = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2773,6 +2974,7 @@ export const createRuntimeProfile = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -2802,6 +3004,7 @@ export const deleteRuntimeProfile = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2826,6 +3029,7 @@ export const getRuntimeProfile = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2849,6 +3053,7 @@ export const updateRuntimeProfile = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -2880,6 +3085,7 @@ export const getRuntimeProfileAllowedTools = <
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2904,6 +3110,7 @@ export const getRuntimeProfilePolicies = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2927,6 +3134,7 @@ export const setRuntimeProfilePolicies = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -2956,6 +3164,7 @@ export const getRuntimeSession = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -2979,6 +3188,7 @@ export const downloadRuntimeSession = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3004,6 +3214,7 @@ export const uploadRuntimeSession = <ThrowOnError extends boolean = false>(
   >({
     bodySerializer: null,
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3033,6 +3244,7 @@ export const listRuntimeSlots = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3056,6 +3268,7 @@ export const beginRuntimeSlot = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3084,6 +3297,7 @@ export const finishRuntimeSlot = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3115,6 +3329,7 @@ export const findLatestRuntimeSlotForAttempt = <
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3139,6 +3354,7 @@ export const stageTaskArtifact = <ThrowOnError extends boolean = false>(
   >({
     bodySerializer: null,
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3168,6 +3384,7 @@ export const batchDeleteTasks = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3196,6 +3413,7 @@ export const listTasks = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3219,6 +3437,7 @@ export const createTask = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3248,6 +3467,7 @@ export const getTaskActivityAnalytics = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3272,6 +3492,7 @@ export const listTaskSchemas = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3292,6 +3513,7 @@ export const getTask = <ThrowOnError extends boolean = false>(
   (options.client ?? client).get<GetTaskResponses, GetTaskErrors, ThrowOnError>(
     {
       security: [
+        { scheme: 'bearer', type: 'http' },
         { scheme: 'bearer', type: 'http' },
         { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
         {
@@ -3317,6 +3539,7 @@ export const updateTaskMetadata = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3346,6 +3569,7 @@ export const listTaskAttempts = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3369,6 +3593,7 @@ export const abortTaskAttempt = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3398,6 +3623,7 @@ export const completeTask = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3425,6 +3651,7 @@ export const failTaskAttempt = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3454,6 +3681,7 @@ export const taskHeartbeat = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3482,6 +3710,7 @@ export const listTaskMessages = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3505,6 +3734,7 @@ export const appendTaskMessages = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3534,6 +3764,7 @@ export const cancelTask = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3561,6 +3792,7 @@ export const claimTask = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3590,6 +3822,7 @@ export const revokeTaskGrant = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3618,6 +3851,7 @@ export const listTaskGrants = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3641,6 +3875,7 @@ export const createTaskGrant = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3670,6 +3905,7 @@ export const listTaskArtifacts = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3693,6 +3929,7 @@ export const downloadTaskArtifactByCid = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3718,6 +3955,7 @@ export const uploadTaskArtifact = <ThrowOnError extends boolean = false>(
   >({
     bodySerializer: null,
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3747,6 +3985,7 @@ export const downloadTaskArtifact = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3770,6 +4009,7 @@ export const listTeams = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3795,6 +4035,7 @@ export const createTeam = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3811,7 +4052,7 @@ export const createTeam = <ThrowOnError extends boolean = false>(
   });
 
 /**
- * Join a team using an invite code.
+ * Join using an invitation and a credential/session with team:join. Key issuance requires Idempotency-Key; secrets are returned once and completed replays return 409.
  */
 export const joinTeam = <ThrowOnError extends boolean = false>(
   options: Options<JoinTeamData, ThrowOnError>,
@@ -3822,6 +4063,7 @@ export const joinTeam = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3851,6 +4093,7 @@ export const deleteTeam = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3871,6 +4114,7 @@ export const getTeam = <ThrowOnError extends boolean = false>(
   (options.client ?? client).get<GetTeamResponses, GetTeamErrors, ThrowOnError>(
     {
       security: [
+        { scheme: 'bearer', type: 'http' },
         { scheme: 'bearer', type: 'http' },
         { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
         {
@@ -3896,6 +4140,7 @@ export const acceptTeamFounding = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3925,6 +4170,7 @@ export const listGroups = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -3948,6 +4194,7 @@ export const createGroup = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -3977,6 +4224,7 @@ export const listTeamInvites = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -4000,6 +4248,7 @@ export const createTeamInvite = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -4029,6 +4278,7 @@ export const deleteTeamInvite = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -4052,6 +4302,7 @@ export const listTeamMembers = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -4077,6 +4328,7 @@ export const removeTeamMember = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -4100,6 +4352,7 @@ export const updateTeamMemberRole = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
@@ -4129,6 +4382,7 @@ export const listPendingTransfers = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -4153,6 +4407,7 @@ export const acceptTransfer = <ThrowOnError extends boolean = false>(
   >({
     security: [
       { scheme: 'bearer', type: 'http' },
+      { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
         in: 'cookie',
@@ -4176,6 +4431,7 @@ export const rejectTransfer = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     security: [
+      { scheme: 'bearer', type: 'http' },
       { scheme: 'bearer', type: 'http' },
       { name: 'X-Moltnet-Session-Token', type: 'apiKey' },
       {
