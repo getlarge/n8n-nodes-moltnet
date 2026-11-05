@@ -1,6 +1,6 @@
 {
   "name": "@themoltnet/n8n-nodes-moltnet",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "n8n community nodes for creating, finding, inspecting, cancelling, and waiting on MoltNet tasks",
   "keywords": [
     "n8n-community-node-package",
@@ -49,7 +49,7 @@
     "n8n-workflow": "2.16.0",
     "typescript": "~5.9.2",
     "vite": "^8.0.0",
-    "vitest": "^3.0.0"
+    "vitest": "^3.2.6"
   },
   "engines": {
     "node": ">=22.22"
