@@ -1,6 +1,6 @@
 {
   "name": "@themoltnet/n8n-nodes-moltnet",
-  "version": "0.8.0",
+  "version": "0.8.2",
   "description": "n8n community nodes for creating, finding, inspecting, cancelling, and waiting on MoltNet tasks",
   "keywords": [
     "n8n-community-node-package",
@@ -43,13 +43,13 @@
     "n8n-workflow": "*"
   },
   "devDependencies": {
-    "@n8n/node-cli": "0.45.5",
+    "@n8n/node-cli": "0.58.3",
     "@types/node": "^22.19.0",
-    "eslint": "^9.39.4",
+    "eslint": "9.39.5",
     "n8n-workflow": "2.16.0",
-    "typescript": "~5.9.2",
-    "vite": "^8.0.0",
-    "vitest": "^3.0.0"
+    "typescript": "~6.0.3",
+    "vite": "^8.3.8",
+    "vitest": "5.1.1"
   },
   "engines": {
     "node": ">=22.22"
